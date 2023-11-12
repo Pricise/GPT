@@ -12,6 +12,7 @@ import Hamburger from './assets/hamburger.svg';
 import Info from './assets/info.svg';
 import SettingGear from './assets/settingGear.svg';
 import Add from './assets/add.svg';
+import Search from './assets/icons8-search.svg'
 import UploadIcon from './assets/upload.svg';
 import { ActiveState } from './models/misc';
 import APIKeyModal from './preferences/APIKeyModal';
@@ -49,6 +50,7 @@ export default function Navigation({ navOpen, setNavOpen }: NavigationProps) {
   const { isMobile } = useMediaQuery();
 
   const [isDocsListOpen, setIsDocsListOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(''); // Added search query state
 
   const isApiKeySet = useSelector(selectApiKeyStatus);
   const [apiKeyModalState, setApiKeyModalState] =
@@ -169,8 +171,52 @@ export default function Navigation({ navOpen, setNavOpen }: NavigationProps) {
     setNavOpen(!isMobile);
   }, [isMobile]);
 
+    // Filter conversations based on the search query
+const filteredConversations = conversations
+  ? conversations.filter((conversation) => {
+      const search = searchQuery.toLowerCase();
+      return conversation.name.toLowerCase().includes(search);
+    })
+  : [];
+
   return (
     <>
+    {!navOpen && (
+          <div className="mt-4 ml-4">
+            <div className="mt-4 ml-4">
+              <button
+                className="my-auto text-sm text-neutral-600 flex items-center gap-2.5 cursor-pointer"
+                onClick={() => {
+                  setNavOpen(!navOpen);
+                }}
+              >
+              <img src={Add} alt="new" className="opacity-80 group-hover:opacity-100" />
+              New Chat
+            </button>
+          </div>
+
+        <div className="mt-4 ml-4">
+          <div className="my-auto text-sm text-neutral-600 flex items-center gap-2.5 cursor-pointer">
+            <div className="search-icon-container">
+              <img
+                src={Search}
+                alt="search"
+                className="opacity-80 group-hover:opacity-100"
+              />
+            </div>
+            <div className="search-input-container">
+              <input
+                type="text"
+                placeholder="Find a chat"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-247 h-43 px-3 rounded-97px border-1 border-silver focus:border-rainy-gray focus:outline-none"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {!navOpen && (
         <button
           className="duration-25 absolute sticky top-3 left-3 z-20 hidden transition-all md:block"
@@ -215,6 +261,27 @@ export default function Navigation({ navOpen, setNavOpen }: NavigationProps) {
             />
           </button>
         </div>
+        <div className="mt-4 ml-4">
+          <div className="my-auto text-sm text-neutral-600 flex items-center gap-2.5 cursor-pointer">
+            <div className="search-icon-container">
+              <img
+                src={Search}
+                alt="search"
+                className="opacity-80 group-hover:opacity-100"
+              />
+            </div>
+            <div className="search-input-container">
+              <input
+                type="text"
+                placeholder="Find a chat"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-247 h-43 px-3 rounded-97px border-1 border-silver focus:border-rainy-gray focus:outline-none"
+              />
+            </div>
+          </div>
+        </div>
+
         <NavLink
           to={'/'}
           onClick={() => {
@@ -240,10 +307,11 @@ export default function Navigation({ navOpen, setNavOpen }: NavigationProps) {
             New Chat
           </p>
         </NavLink>
-        <p className="ml-6 mt-3 text-sm font-semibold">Chats</p>
-        {conversations && (
-          <div className="conversations-container mb-auto max-h-[25rem] overflow-y-auto">
-            {conversations?.map((conversation) => (
+        
+        {filteredConversations && (
+          <div className="conversations-container max-h-[25rem] overflow-y-auto">
+            <p className="ml-6 mt-3 text-sm font-semibold">Chats</p>
+            {filteredConversations.map((conversation) => (
               <ConversationTile
                 key={conversation.id}
                 conversation={conversation}
@@ -254,6 +322,7 @@ export default function Navigation({ navOpen, setNavOpen }: NavigationProps) {
             ))}
           </div>
         )}
+        
 
         <div className="flex flex-col-reverse border-b-2">
           <div className="relative my-4 flex gap-2 px-2">
@@ -382,27 +451,28 @@ export default function Navigation({ navOpen, setNavOpen }: NavigationProps) {
         </div>
       </div>
       <div className="fixed z-10 h-16 w-full border-b-2 bg-gray-50 md:hidden">
-        <button
-          className="mt-5 ml-6 h-6 w-6 md:hidden"
-          onClick={() => setNavOpen(true)}
-        >
-          <img src={Hamburger} alt="menu toggle" className="w-7" />
-        </button>
-      </div>
-      <SelectDocsModal
-        modalState={selectedDocsModalState}
-        setModalState={setSelectedDocsModalState}
-        isCancellable={isSelectedDocsSet}
-      />
-      <APIKeyModal
-        modalState={apiKeyModalState}
-        setModalState={setApiKeyModalState}
-        isCancellable={isApiKeySet}
-      />
-      <Upload
-        modalState={uploadModalState}
-        setModalState={setUploadModalState}
-      ></Upload>
-    </>
+      <button
+        className="mt-5 ml-6 h-6 w-6 md:hidden"
+        onClick={() => setNavOpen(true)}
+      >
+        <img src={Hamburger} alt="menu toggle" className="w-7" />
+      </button>
+    </div>
+    
+    <SelectDocsModal
+      modalState={selectedDocsModalState}
+      setModalState={setSelectedDocsModalState}
+      isCancellable={isSelectedDocsSet}
+    />
+    <APIKeyModal
+      modalState={apiKeyModalState}
+      setModalState={setApiKeyModalState}
+      isCancellable={isApiKeySet}
+    />
+    <Upload
+      modalState={uploadModalState}
+      setModalState={setUploadModalState}
+    ></Upload>
   );
 }
+</>
