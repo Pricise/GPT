@@ -2,7 +2,6 @@ import os
 from application.retriever.base import BaseRetriever
 from application.core.settings import settings
 from application.vectorstore.vector_creator import VectorCreator
-from application.llm.llm_creator import LLMCreator
 
 from application.utils import count_tokens
 
@@ -77,7 +76,7 @@ class ClassicRAG(BaseRetriever):
 
         return docs
 
-    def gen(self):
+    def gen(self, cache):
         docs = self._get_data()
 
         # join all page_content together with a newline
@@ -106,7 +105,7 @@ class ClassicRAG(BaseRetriever):
                         )
         messages_combine.append({"role": "user", "content": self.question})
 
-        llm = LLMCreator.create_llm(
+        llm = cache.get("llm_creator").create_llm(
             settings.LLM_NAME, api_key=settings.API_KEY, user_api_key=self.user_api_key
         )
 
